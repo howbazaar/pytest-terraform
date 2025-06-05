@@ -60,7 +60,9 @@ class TerraformRunner(object):
         self.stream_output = stream_output
         self.plugin_cache = plugin_cache or ""
         self.tf_bin = tf_bin
-        self.env = env
+        if env is not None:
+            assert isinstance(env, dict), "env must be a dict"
+        self.env = env or {}
 
     def apply(self, plan=True):
         """run terraform apply"""
@@ -115,12 +117,7 @@ class TerraformRunner(object):
             tf_env["TF_DATA_DIR"] = self.work_dir
         cwd = self.module_dir or self.work_dir
         env.update(tf_env)
-        if self.env is not None:
-            if isinstance(self.env, dict):
-                env.update(self.env)
-            else:
-                # Expected to be a callable that returns a dict.
-                env.update(self.env())
+        env.update(self.env)
 
         write_log("run cmd", args, tf_env, cwd)
         run_cmd = subprocess.check_call

@@ -247,24 +247,11 @@ output "foo" {
     assert state.outputs["foo"]["value"] == "bar"
 
 
-def test_tf_runner_env_callable(tmpdir_writer, trunner):
-    # ** requires network access to install plugin **
-    tmpdir_writer(
-        """
-variable "foo" {
-    type = string
-    default = ""
-}
+def test_tf_runner_env_wrong_type(tmpdir):
+    with pytest.raises(AssertionError) as err:
+        tf.TerraformRunner(tmpdir.strpath, env=1)
 
-output "foo" {
-    value = var.foo
-}
-"""
-    )
-    trunner.env = lambda: {"TF_VAR_foo": "bar"}
-    trunner.init()
-    state = trunner.apply()
-    assert state.outputs["foo"]["value"] == "bar"
+    assert "env must be a dict" == str(err.value)
 
 
 def xtest_bar_fixture(testdir):
